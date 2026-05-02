@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import Select from "react-select";
 import { FiArrowLeft, FiX, FiSave, FiUpload, FiTag, FiLink, FiFolder, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { axiosInstance, createSlug, notify } from "../../../../../../helper/helper";
 import Link from "next/link";
+import Select from "react-select/base";
 
 export default function AddBrandPage() {
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Select from "react-select";
+import Select from "react-select/base";
 import { FiLink } from "react-icons/fi";
 import { axiosInstance, createSlug, notify } from "../../../../helper/helper";
 import { FiImage, FiArrowLeft, FiSave, FiPackage, FiTag, FiGrid, FiDroplet, FiFileText, FiDollarSign, FiPercent } from "react-icons/fi";
