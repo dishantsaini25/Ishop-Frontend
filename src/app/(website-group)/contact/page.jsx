@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaTwitter, FaInstagram, FaYoutube } from "react-icons/fa";
 
+export const dynamic = 'force-dynamic';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { FaTruck, FaShieldAlt, FaHeadset, FaCreditCard } from 'react-icons/fa';
 
+export const dynamic = 'force-dynamic';
+
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-gray-50">
