@@ -430,13 +430,13 @@ export default function ProfileContent() {
                   <ChevronRight size={16} />
                 </button>
 
-                <button onClick={() | setActiveTab("settings")} className={tabClass("settings")}>
-                  <div className="flex items-center gap-3">
-                    <Settings size={18} />
-                    <span>Settings</span>
-                  </div>
-                  <ChevronRight size={16} />
-                </button>
+ <button onClick={() => setActiveTab("settings")} className={tabClass("settings")}>
+  <div className="flex items-center gap-3">
+    <Settings size={18} />
+    <span>Settings</span>
+  </div>
+  <ChevronRight size={16} />
+</button>
               </div>
 
               {/* Logout Button */}
