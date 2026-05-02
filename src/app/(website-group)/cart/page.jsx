@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client'
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -6,7 +8,6 @@ import { formatIndianCurrency } from '../../../../helper/helper';
 import { increaseQty, decreaseQty, removeItem } from "@/redux/reducers/CartSlice";
 import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowLeft } from 'react-icons/fa';
 
-export const dynamic = 'force-dynamic';
 
 export default function Page() {
     const cart = useSelector((store) => store.cart);

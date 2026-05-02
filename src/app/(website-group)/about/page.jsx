@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import Link from 'next/link';
 import { FaTruck, FaShieldAlt, FaHeadset, FaCreditCard } from 'react-icons/fa';
 
-export const dynamic = 'force-dynamic';
 
 export default function AboutPage() {
     return (
