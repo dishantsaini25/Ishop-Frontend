@@ -73,7 +73,6 @@ export default function ProductCard({ product, imageBaseUrl, user }) {
           name={product.name} 
           final_price={product.final_price} 
           original_price={product.original_price} 
-          discount_percentage={product.discount_percentage} 
           thumbnail={imageUrl} 
           color_ids={product.color_ids} 
         />

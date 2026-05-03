@@ -341,7 +341,7 @@ export default function ProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600 font-medium">Loading your profile...</p>
@@ -355,9 +355,9 @@ export default function ProfileContent() {
   // ==================== MAIN RENDER ====================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white">
+      <div className="bg-linear-to-r from-teal-600 to-emerald-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div>
@@ -378,7 +378,7 @@ export default function ProfileContent() {
               {/* Profile Summary */}
               <div className="p-6 text-center border-b border-gray-100">
                 <div className="relative inline-block">
-                  <div className="w-24 h-24 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-24 h-24 bg-linear-to-r from-teal-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto">
                     <span className="text-white text-3xl font-bold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </span>
@@ -802,7 +802,7 @@ export default function ProfileContent() {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
                     </label>
                   </div>
                 </div>
@@ -848,7 +848,7 @@ export default function ProfileContent() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative min-h-screen flex items-center justify-center p-4">
             <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-t-2xl">
+              <div className="sticky top-0 z-10 bg-linear-to-r from-teal-600 to-emerald-600 text-white rounded-t-2xl">
                 <div className="px-6 py-4 flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <Package className="text-white" size={24} />
@@ -863,7 +863,7 @@ export default function ProfileContent() {
                 </div>
               </div>
               <div className="p-6 space-y-6">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
+                <div className="bg-linear-to-r from-gray-50 to-gray-100 rounded-xl p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <p className="text-sm text-gray-500">Order Status</p>

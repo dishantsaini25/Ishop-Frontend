@@ -75,6 +75,9 @@ export default function LoginPage() {
           original_total += Number(data.qty * original_price);
 
           const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+          const discountPct = original_price > 0
+            ? Math.round(((original_price - final_price) / original_price) * 100)
+            : 0;
 
           return {
             name,
@@ -82,6 +85,7 @@ export default function LoginPage() {
             final_price,
             original_price,
             discount_price,
+            discount_percentage: discountPct,
             thumbnail: `${baseUrl}/images/product/main/${thumbnail}`,
             stock,
             qty: data.qty,

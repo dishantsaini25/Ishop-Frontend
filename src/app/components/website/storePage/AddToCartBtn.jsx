@@ -32,7 +32,9 @@ export default function AddToCartButton(props) {
             original_price: props.original_price,
             final_price: props.final_price,
             thumbnail: props.thumbnail,
-            discount_percentage: props.discount_percentage,
+            discount_percentage: props.original_price > 0
+                ? Math.round(((props.original_price - props.final_price) / props.original_price) * 100)
+                : 0,
             stock: props.stock
         }));
     }

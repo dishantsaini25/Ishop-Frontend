@@ -144,7 +144,11 @@ export const cartSlice = createSlice({
                     final_price: item.productId?.final_price || item.final_price,
                     original_price: item.productId?.original_price || item.original_price,
                     thumbnail: item.productId?.thumbnail || item.thumbnail,
-                    discount_percentage: item.productId?.discount_percentage || item.discount_percentage,
+                    discount_percentage: (() => {
+                        const op = item.productId?.original_price || item.original_price || 0;
+                        const fp = item.productId?.final_price || item.final_price || 0;
+                        return op > 0 ? Math.round(((op - fp) / op) * 100) : 0;
+                    })(),
                     stock: item.productId?.stock || item.stock
                 }));
                 

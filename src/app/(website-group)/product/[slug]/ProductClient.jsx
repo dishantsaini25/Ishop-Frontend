@@ -136,7 +136,9 @@ export default function ProductClient({ product, imageBaseUrl, relatedProducts }
       final_price: product.final_price,
       original_price: product.original_price,
       thumbnail: getMainImageUrl(product.thumbnail),
-      discount_percentage: product.discount_percentage,
+      discount_percentage: product.original_price > 0
+        ? Math.round(((product.original_price - product.final_price) / product.original_price) * 100)
+        : 0,
       stock: product.stock,
       qty: 1
     }));
@@ -159,7 +161,9 @@ export default function ProductClient({ product, imageBaseUrl, relatedProducts }
         final_price: product.final_price,
         original_price: product.original_price,
         thumbnail: getMainImageUrl(product.thumbnail),
-        discount_percentage: product.discount_percentage,
+        discount_percentage: product.original_price > 0
+          ? Math.round(((product.original_price - product.final_price) / product.original_price) * 100)
+          : 0,
         stock: product.stock,
         qty: 1
       }));
