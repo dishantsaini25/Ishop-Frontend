@@ -1,5 +1,18 @@
-// import { cookies } from "next/headers";
 import { axiosInstance } from "../../helper/helper";
+
+// Helper: detect server vs client
+const isServer = () => typeof window === 'undefined';
+
+// Helper: make a fetch call on server side
+const serverFetch = async (path) => {
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+  const fullUrl = `${baseUrl}/${path}`;
+  const response = await fetch(fullUrl, {
+    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return response.json();
+};
 
 export const fetchCategory = async (queryObject = {}) => {
   const query = new URLSearchParams();
@@ -10,29 +23,29 @@ export const fetchCategory = async (queryObject = {}) => {
   if (queryObject.limit) query.append("limit", queryObject.limit);
   if (queryObject.is_home) query.append("is_home", queryObject.is_home);
 
-  try {
-    const response = await axiosInstance.get(
-      `category?${query.toString()}`
-    );
+  const path = `category?${query.toString()}`;
 
-    if (response.data.success) {
+  try {
+    let data;
+
+    if (isServer()) {
+      data = await serverFetch(path);
+    } else {
+      const response = await axiosInstance.get(path);
+      data = response.data;
+    }
+
+    if (data.success) {
       return {
-        category: response.data.data?.category || [],
-        imageBaseUrl: response.data.data?.imageBaseUrl || "",
+        category: data.data?.category || [],
+        imageBaseUrl: data.data?.imageBaseUrl || "",
       };
     }
-    return {
-      category: [],
-      imageBaseUrl: "",
-    };
+    return { category: [], imageBaseUrl: "" };
 
   } catch (error) {
-    console.log("Fetch Category Error:", error);
-
-    return {
-      category: [],
-      imageBaseUrl: "",
-    };
+    console.log("Fetch Category Error:", error.message || error);
+    return { category: [], imageBaseUrl: "" };
   }
 };
 
@@ -84,83 +97,64 @@ export const fetchCategory = async (queryObject = {}) => {
 export const fetchBrand = async (queryObject = {}) => {
   const query = new URLSearchParams();
 
-  if (queryObject.id)
-    query.append("id", queryObject.id);
-
-  if (queryObject.status !== undefined)
-    query.append("status", queryObject.status);
-
-  if (queryObject.category_slug)
-    query.append("category_slug", queryObject.category_slug);
-    
-  if (queryObject.limit)
-    query.append("limit", queryObject.limit);
+  if (queryObject.id) query.append("id", queryObject.id);
+  if (queryObject.status !== undefined) query.append("status", queryObject.status);
+  if (queryObject.category_slug) query.append("category_slug", queryObject.category_slug);
+  if (queryObject.limit) query.append("limit", queryObject.limit);
 
   const queryString = query.toString();
-  const url = queryString ? `brands?${queryString}` : `brands`;
-
-  // ✅ Check if running on server or client
-  const isServer = typeof window === 'undefined';
+  const path = queryString ? `brands?${queryString}` : `brands`;
 
   try {
     let data;
-    
-    if (isServer) {
-      // ✅ Server-side: Use fetch with full URL
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-      const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-      const fullUrl = `${cleanBaseUrl}/${url}`;
-      
-      console.log("Server fetching brands:", fullUrl);
-      
-      const response = await fetch(fullUrl, {
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      data = await response.json();
+
+    if (isServer()) {
+      data = await serverFetch(path);
     } else {
-      // ✅ Client-side: Use axiosInstance (existing)
-      const response = await axiosInstance.get(url);
+      const response = await axiosInstance.get(path);
       data = response.data;
     }
 
     if (data.success) {
       return {
         brand: data.data?.brand || [],
-        imageBaseUrl: data.data?.imageBaseUrl || ""
+        imageBaseUrl: data.data?.imageBaseUrl || "",
       };
     }
-    
-    return { brand: [] };
+
+    return { brand: [], imageBaseUrl: "" };
   } catch (error) {
-    console.log("Fetch Brand Error:", error.response?.data || error.message);
-    return { brand: [] };
+    console.log("Fetch Brand Error:", error.message || error);
+    return { brand: [], imageBaseUrl: "" };
   }
 };
 
 
 
-export const fetchColors = (queryObject = {}) => {
+export const fetchColors = async (queryObject = {}) => {
   const query = new URLSearchParams();
-  if (queryObject.id)
-    query.append("id", queryObject.id);
+  if (queryObject.id) query.append("id", queryObject.id);
   if (queryObject.status) query.append("status", queryObject.status);
 
+  const path = `colors?${query.toString()}`;
 
-  return axiosInstance.get(`colors?${query.toString()}`)
-    .then((response) => {
-      if (response.data.success) {
-        return {
-          colors: response.data.data.colors
-        };
-      } else {
-        return null;
-      }
-    })
-    .catch(() => {
-      return null;
-    });
+  try {
+    let data;
+
+    if (isServer()) {
+      data = await serverFetch(path);
+    } else {
+      const response = await axiosInstance.get(path);
+      data = response.data;
+    }
+
+    if (data.success) {
+      return { colors: data.data.colors };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };
 
 
@@ -220,7 +214,6 @@ export const fetchProduct = async (queryObject = {}) => {
   try {
     const query = new URLSearchParams();
 
-    // Existing filters
     if (queryObject.id) query.append("id", queryObject.id);
     if (queryObject.category_slug) query.append("category_slug", queryObject.category_slug);
     if (queryObject.brand_slug) query.append("brand_slug", queryObject.brand_slug);
@@ -232,8 +225,6 @@ export const fetchProduct = async (queryObject = {}) => {
     if (queryObject.sort) query.append("sort", queryObject.sort);
     if (queryObject.limit) query.append("limit", queryObject.limit);
     if (queryObject.slug) query.append("slug", queryObject.slug);
-    
-    // ✅ New filters for tabs
     if (queryObject.stock !== undefined) query.append("stock", queryObject.stock);
     if (queryObject.is_best_seller !== undefined) query.append("is_best_seller", queryObject.is_best_seller);
     if (queryObject.is_hot !== undefined) query.append("is_hot", queryObject.is_hot);
@@ -241,27 +232,34 @@ export const fetchProduct = async (queryObject = {}) => {
     if (queryObject.show_home !== undefined) query.append("show_home", queryObject.show_home);
 
     const queryString = query.toString();
-    const url = queryString ? `products?${queryString}` : `products`;
+    const path = queryString ? `products?${queryString}` : `products`;
 
-    const response = await axiosInstance.get(url);
+    let data;
 
-    if (response.data.success) {
+    if (isServer()) {
+      data = await serverFetch(path);
+    } else {
+      const response = await axiosInstance.get(path);
+      data = response.data;
+    }
+
+    if (data.success) {
       return {
-        product: response.data.data?.product || [],
-        colors: response.data.data?.colors || [],
-        brands: response.data.data?.brands || [],
-        categories: response.data.data?.categories || [],
-        imageBaseUrl: response.data.data?.imageBaseUrl || "",
-        maxPrice: response.data.data?.maxPrice || 5000,
-        total: response.data.data?.total || 0,
-        currentPage: response.data.data?.currentPage || 1,
-        totalPages: response.data.data?.totalPages || 1,
+        product: data.data?.product || [],
+        colors: data.data?.colors || [],
+        brands: data.data?.brands || [],
+        categories: data.data?.categories || [],
+        imageBaseUrl: data.data?.imageBaseUrl || "",
+        maxPrice: data.data?.maxPrice || 5000,
+        total: data.data?.total || 0,
+        currentPage: data.data?.currentPage || 1,
+        totalPages: data.data?.totalPages || 1,
       };
     }
 
     return null;
   } catch (error) {
-    console.log("Fetch Product Error:", error.response?.data || error.message);
+    console.log("Fetch Product Error:", error.message || error);
     return null;
   }
 };

@@ -1,6 +1,8 @@
 import { fetchProduct } from "@/api/api-call";
 import ProductClient from "./ProductClient";
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const productData = await fetchProduct({ slug: slug, status: true });

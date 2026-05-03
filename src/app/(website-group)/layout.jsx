@@ -5,6 +5,8 @@ import Footer from "../components/website/Footer";
 import StoreProvider from "@/redux/StoreProvider";
 import { getUser } from "@/api/api-server";
 
+export const dynamic = 'force-dynamic';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans", subsets: ["latin"],

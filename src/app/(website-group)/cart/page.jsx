@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic';
-
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import Link from 'next/link';

@@ -12,6 +12,8 @@ import MiniCategorySection from "../components/website/homePage/MiniCategorySect
 import RecentlyViewed from "../components/website/homePage/RecentlyViewed";
 import { fetchBrand, fetchCategory } from "@/api/api-call";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const { category = [], imageBaseUrl = "" } = await fetchCategory({
     status: true,
