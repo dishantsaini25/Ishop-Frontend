@@ -39,7 +39,8 @@ export default function ProductClient({ product, imageBaseUrl, relatedProducts }
   const getOtherImageUrl = (imageName) => {
     if (!imageName) return null;
     if (imageName.startsWith('http')) return imageName;
-    return `http://localhost:5000/images/product/other/${imageName}`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+    return `${baseUrl}/images/product/other/${imageName}`;
   };
 
   // ✅ Create all images array with proper URLs

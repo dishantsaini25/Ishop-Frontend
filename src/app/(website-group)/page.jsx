@@ -14,6 +14,17 @@ import { fetchBrand, fetchCategory } from "@/api/api-call";
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: "Swoo Tech Mart - Best Electronics & Gadgets Online",
+  description:
+    "Shop the latest electronics, mobiles, laptops, tablets and gadgets at the best prices. Free shipping on orders over ₹199.",
+  openGraph: {
+    title: "Swoo Tech Mart - Best Electronics & Gadgets Online",
+    description: "Shop the latest electronics, mobiles, laptops, tablets and gadgets at the best prices.",
+    url: "/",
+  },
+};
+
 export default async function Home() {
   const { category = [], imageBaseUrl = "" } = await fetchCategory({
     status: true,

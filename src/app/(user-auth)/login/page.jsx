@@ -74,13 +74,15 @@ export default function LoginPage() {
           final_total += Number(data.qty * final_price);
           original_total += Number(data.qty * original_price);
 
+          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+
           return {
             name,
             id: _id,
             final_price,
             original_price,
             discount_price,
-            thumbnail: `http://localhost:5000/images/product/main/${thumbnail}`,
+            thumbnail: `${baseUrl}/images/product/main/${thumbnail}`,
             stock,
             qty: data.qty,
           };

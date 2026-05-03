@@ -1,6 +1,8 @@
 import { fetchProduct } from "@/api/api-call";
 import ProductCard from "@/app/components/website/storePage/ProductCard";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page({ params }) {
 
   const resolvedParams = await params;  

@@ -1,6 +1,8 @@
 import { fetchBrand, fetchCategory, fetchColors } from "@/api/api-call";
 import AddProduct from "@/app/components/admin/AddProduct";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
 
   const  category = await fetchCategory();

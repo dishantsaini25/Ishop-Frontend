@@ -6,6 +6,8 @@ import ViewButton from "@/app/components/admin/ViewButton";
 import { fetchProduct } from "@/api/api-call";
 import { FaFileImage } from "react-icons/fa";
 
+export const dynamic = 'force-dynamic';
+
 
 export default async function page() {
 

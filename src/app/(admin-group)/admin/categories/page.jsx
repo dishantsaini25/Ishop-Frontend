@@ -8,6 +8,8 @@ import {
 } from "react-icons/fi"
 import DeleteBtn from "@/app/components/admin/DeleteBtn";
 
+export const dynamic = 'force-dynamic';
+
 export default async function page() {
   const { category, imageBaseUrl } = await fetchCategory();
   

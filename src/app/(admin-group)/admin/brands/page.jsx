@@ -4,6 +4,8 @@ import StatusBadge from "@/app/components/admin/StatusBtn";
 import { FiEdit, FiPlus } from "react-icons/fi";
 import DeleteBtn from "@/app/components/admin/DeleteBtn";
 
+export const dynamic = 'force-dynamic';
+
 export default async function page() {
 
   const { brand, imageBaseUrl } = await fetchBrand();

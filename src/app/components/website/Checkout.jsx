@@ -88,7 +88,7 @@ export default function CheckoutPage({ user }) {
 
         try {
             try {
-                const syncResponse = await axiosInstance.post("/cart-sync", { 
+                const syncResponse = await axiosInstance.post("/cart/cart-sync", { 
                     user_id: user._id,
                     cart: cart.items.map(item => ({
                         id: item.id,
