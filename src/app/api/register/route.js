@@ -4,7 +4,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:5000';
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
     
     console.log('Proxy: Forwarding registration to:', `${backendUrl}/user/register`);
     
@@ -18,15 +18,17 @@ export async function POST(request) {
     
     const data = await response.json();
     
-    console.log('Proxy: Backend response:', data);
+    console.log('Proxy: Backend response status:', response.status, 'data:', data);
     
-    return NextResponse.json(data, { status: response.status });
+    // Always return 200 to frontend so fetch doesn't throw
+    // Pass the actual success/message from backend
+    return NextResponse.json(data, { status: 200 });
     
   } catch (error) {
-    console.error('Proxy: Error:', error);
+    console.error('Proxy: Error:', error.message);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { success: false, message: 'Server error. Please try again.' },
+      { status: 200 }
     );
   }
 }

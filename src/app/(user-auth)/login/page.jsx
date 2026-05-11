@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { axiosInstance, notify } from "../../../../helper/helper";
+import { notify } from "../../../../helper/helper";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,102 +32,44 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const response = await axiosInstance.post("/user/login", payload);
+      // Use Next.js proxy to avoid CORS issues
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      console.log('Login response:', response.data);
+      const data = await response.json();
 
-      if (!response.data.success) {
-        notify(response.data.message, false);
+      if (!data.success) {
+        notify(data.message || "Login failed", false);
         return;
       }
 
-      // Get cart from localStorage
-      let cartItems = [];
+      // Cart sync with backend if local cart has items
       try {
-        const cart = JSON.parse(localStorage.getItem("cart"));
-        cartItems = cart?.items || [];
-      } catch (err) {
-        cartItems = [];
-      }
+        const localCart = JSON.parse(localStorage.getItem("cart"));
+        const cartItems = localCart?.items || [];
 
-      // Cart sync - only if there are items in cart
-      if (cartItems.length > 0) {
-        try {
-          const cart_response = await axiosInstance.post("/cart/cart-sync", {
-            cart: cartItems,
-            user_id: response.data?.data.id,
-          });
-
-          const cartResponse = cart_response.data.data.cart;
-
-          let final_total = 0;
-          let original_total = 0;
-
-          const items = cartResponse.map((data) => {
-            const {
-              _id,
-              final_price,
-              original_price,
-              discount_price,
-              thumbnail,
-              stock,
-              name,
-            } = data.productId;
-
-            final_total += Number(data.qty * final_price);
-            original_total += Number(data.qty * original_price);
-
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
-            const discountPct = original_price > 0
-              ? Math.round(((original_price - final_price) / original_price) * 100)
-              : 0;
-
-            return {
-              name,
-              id: _id,
-              final_price,
-              original_price,
-              discount_price,
-              discount_percentage: discountPct,
-              thumbnail: `${baseUrl}/images/product/main/${thumbnail}`,
-              stock,
-              qty: data.qty,
-            };
-          });
-
-          localStorage.setItem(
-            "cart",
-            JSON.stringify({
-              items,
-              final_total,
-              original_total,
-            })
-          );
-        } catch (error) {
-          console.log("Cart Sync Error:", error);
-          // Don't block login if cart sync fails
+        if (cartItems.length > 0) {
+          await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '')}/cart/cart-sync`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: cartItems, user_id: data.data.id }),
+          }).catch(() => {});
         }
-      }
+      } catch (_) {}
 
       notify("Login Successful", true);
-      
-      // Small delay to ensure cookie is set
-      setTimeout(() => {
-        router.push("/");
-        router.refresh(); // Force refresh to update user state
-      }, 500);
-      
+
+      // Refresh to update server-side user state in header
+      router.push("/");
+      router.refresh();
+
     } catch (error) {
       console.error('Login error:', error);
-      if (error.code === 'ECONNABORTED') {
-        notify("Request timeout. Please try again.", false);
-      } else if (error.response) {
-        notify(error.response.data?.message || "Login failed", false);
-      } else if (error.request) {
-        notify("Network error. Please check your connection.", false);
-      } else {
-        notify("Internal Server Error", false);
-      }
+      notify("Login failed. Please try again.", false);
     } finally {
       setLoading(false);
     }
@@ -136,7 +78,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="bg-white w-full max-w-5xl rounded-xl shadow-lg grid md:grid-cols-2 overflow-hidden">
-        
+
         {/* Left Side */}
         <div className="hidden md:flex items-center justify-center bg-teal-600 text-white p-10">
           <div>
@@ -149,13 +91,9 @@ export default function LoginPage() {
 
         {/* Right Form */}
         <div className="p-10">
-          <h2 className="text-2xl font-semibold text-teal-600 text-center">
-            Sign In
-          </h2>
+          <h2 className="text-2xl font-semibold text-teal-600 text-center">Sign In</h2>
 
           <form onSubmit={submitHandler} className="mt-8 space-y-5">
-            
-            {/* Email */}
             <div>
               <label className="text-sm text-gray-600">Email</label>
               <input
@@ -166,7 +104,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
@@ -185,14 +122,12 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* ✅ Updated Forgot Password Link */}
             <div className="text-right text-sm">
               <Link href="/forgot-password" className="text-teal-600 hover:underline">
                 Forgot password?
               </Link>
             </div>
 
-            {/* Button */}
             <button
               type="submit"
               disabled={loading}
@@ -203,7 +138,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Don’t have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-teal-600 font-medium">
               Create one
             </Link>

@@ -30,12 +30,13 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
       if (typeof window !== "undefined") {
-        // Check if not already on login page
-        if (!window.location.pathname.includes("/admin/login")) {
+        const path = window.location.pathname;
+        // Only redirect to admin login if on admin pages
+        if (path.startsWith('/admin') && !path.includes("/admin/login")) {
           window.location.href = "/admin/login";
         }
+        // For user pages, do nothing - let the component handle it
       }
     }
     return Promise.reject(error);

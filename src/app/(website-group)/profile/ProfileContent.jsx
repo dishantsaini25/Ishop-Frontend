@@ -82,10 +82,15 @@ export default function ProfileContent() {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/user/me');
-      if (response.data.success) {
-        setUser(response.data.data);
-        setEditForm({ name: response.data.data.name });
+      // Use Next.js proxy to avoid CORS - reads cookie server-side
+      const response = await fetch('/api/user/me', { cache: 'no-store' });
+      const data = await response.json();
+      if (data.success) {
+        setUser(data.data);
+        setEditForm({ name: data.data.name });
+      } else {
+        // Not authenticated - middleware should handle this but just in case
+        router.push('/login');
       }
     } catch (error) {
       console.error('Fetch user error:', error);
@@ -97,12 +102,14 @@ export default function ProfileContent() {
 
   const fetchOrders = async () => {
     try {
-      const response = await axiosInstance.get('/order/my-orders');
-      if (response.data.success) {
-        setOrders(response.data.data);
+      // Use Next.js proxy to avoid CORS
+      const response = await fetch('/api/orders', { cache: 'no-store' });
+      const data = await response.json();
+      if (data.success) {
+        setOrders(data.data);
         setStats({
-          totalOrders: response.data.data.length,
-          totalSpent: response.data.data.reduce((sum, order) => sum + order.order_total, 0)
+          totalOrders: data.data.length,
+          totalSpent: data.data.reduce((sum, order) => sum + order.order_total, 0)
         });
       }
     } catch (error) {
@@ -278,20 +285,12 @@ export default function ProfileContent() {
   const handleLogout = async () => {
     setShowLogoutModal(false);
     setIsLoading(true);
-
     try {
-      const response = await axiosInstance.post('/user/logout');
-      if (response.data.success) {
-        localStorage.clear();
-        notify('Logged out successfully', true);
-        router.push('/');
-        router.refresh();
-      }
-    } catch (error) {
-      notify('Error logging out', false);
-    } finally {
-      setIsLoading(false);
-    }
+      await fetch('/api/logout', { method: 'POST' });
+    } catch (_) {}
+    localStorage.clear();
+    notify('Logged out successfully', true);
+    window.location.href = '/';
   };
 
   // ==================== HELPER FUNCTIONS ====================
