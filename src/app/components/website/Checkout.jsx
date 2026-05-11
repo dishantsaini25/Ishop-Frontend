@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { FaPlus, FaMoneyBillWave, FaCreditCard } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useRazorpay } from "react-razorpay";
-import { axiosInstance, formatIndianCurrency, notify } from "../../../../helper/helper";
+import { formatIndianCurrency, notify } from "../../../../helper/helper";
 import { emptyCart } from "@/redux/reducers/CartSlice";
 
 export default function CheckoutPage({ user }) {
@@ -46,14 +46,19 @@ export default function CheckoutPage({ user }) {
         }
 
         try {
-            const response = await axiosInstance.post(`/user/address/${user._id}`, newAddress);
+            const response = await fetch(`/api/user/address?user_id=${user._id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newAddress),
+            });
+            const data = await response.json();
 
-            if (response.data.success) {
+            if (data.success) {
                 notify("Address added successfully", true);
                 setShowAddressForm(false);
                 window.location.reload();
             } else {
-                notify("Failed to add address", false);
+                notify(data.message || "Failed to add address", false);
             }
         } catch (error) {
             console.error("Address save error:", error);
@@ -88,33 +93,36 @@ export default function CheckoutPage({ user }) {
 
         try {
             try {
-                const syncResponse = await axiosInstance.post("/cart/cart-sync", { 
-                    user_id: user._id,
-                    cart: cart.items.map(item => ({
-                        id: item.id,
-                        qty: item.qty
-                    }))
+                const syncResponse = await fetch('/api/cart/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user._id,
+                        cart: cart.items.map(item => ({ id: item.id, qty: item.qty }))
+                    }),
                 });
-                
-                
-                if (syncResponse.data && syncResponse.data.success === false) {
-                    console.warn("Cart sync warning:", syncResponse.data.message);
-                    // Don't return, continue with order
+                const syncData = await syncResponse.json();
+                if (syncData && syncData.success === false) {
+                    console.warn("Cart sync warning:", syncData.message);
                 }
             } catch (syncError) {
-                console.warn("Cart sync failed but continuing with order:", syncError.message);
+                console.warn("Cart sync failed but continuing:", syncError.message);
             }
 
-            const response = await axiosInstance.post("/order/place", {
-                user_id: user._id,
-                payment_mode: paymentMethod,
-                shipping_details: user.shipping_address[selectedAddress],
-                cart_items: cart.items  // ✅ Send cart items directly as backup
+            const response = await fetch('/api/order/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user._id,
+                    payment_mode: paymentMethod,
+                    shipping_details: user.shipping_address[selectedAddress],
+                    cart_items: cart.items
+                }),
             });
+            const data = await response.json();
 
-
-            if (!response.data.success) {
-                notify(response.data.message || "Order failed", false);
+            if (!data.success) {
+                notify(data.message || "Order failed", false);
                 setIsProcessing(false);
                 return;
             }
@@ -122,30 +130,33 @@ export default function CheckoutPage({ user }) {
             if (paymentMethod === 0) {
                 // COD
                 dispatch(emptyCart());
-                router.push(`/thank-you/${response.data.data}`);
+                router.push(`/thank-you/${data.data}`);
                 setIsProcessing(false);
             } else {
-                // Online Payment
+                // Online Payment - Razorpay
                 const options = {
-                    key: "rzp_test_hYGOo0vBKlVRkD",
-                    amount: response.data.data.amount,
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_hYGOo0vBKlVRkD",
+                    amount: data.data.amount,
                     currency: "INR",
-                    name: "Your Store",
-                    description: `Order #${response.data.data.order_id}`,
-                    order_id: response.data.data.razorpay_order_id,
+                    name: "iShop",
+                    description: `Order #${data.data.order_id}`,
+                    order_id: data.data.razorpay_order_id,
                     handler: async (razorpayResponse) => {
-                        console.log("Payment success:", razorpayResponse);
-                        
                         try {
-                            const successResponse = await axiosInstance.post("/order/success", {
-                                order_id: response.data.data.order_id,
-                                user_id: user._id,
-                                razorpay_response: razorpayResponse
+                            const successRes = await fetch('/api/order/success', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    order_id: data.data.order_id,
+                                    user_id: user._id,
+                                    razorpay_response: razorpayResponse
+                                }),
                             });
+                            const successData = await successRes.json();
 
-                            if (successResponse.data.success) {
+                            if (successData.success) {
                                 dispatch(emptyCart());
-                                router.push(`/thank-you/${successResponse.data.order_id}`);
+                                router.push(`/thank-you/${successData.order_id}`);
                             } else {
                                 notify("Payment verification failed", false);
                             }
@@ -164,9 +175,8 @@ export default function CheckoutPage({ user }) {
                 };
 
                 const razorpayInstance = new Razorpay(options);
-                razorpayInstance.on('payment.failed', (response) => {
-                    console.error("Payment failed:", response.error);
-                    notify(response.error.description || "Payment failed", false);
+                razorpayInstance.on('payment.failed', (resp) => {
+                    notify(resp.error.description || "Payment failed", false);
                     setIsProcessing(false);
                 });
                 razorpayInstance.open();
@@ -174,7 +184,7 @@ export default function CheckoutPage({ user }) {
 
         } catch (error) {
             console.error("Order Error:", error);
-            notify(error.response?.data?.message || "Order failed", false);
+            notify(error.message || "Order failed", false);
             setIsProcessing(false);
         }
     }
