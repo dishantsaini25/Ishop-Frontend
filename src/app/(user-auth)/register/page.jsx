@@ -45,6 +45,7 @@ export default function RegisterPage() {
 
       if (data.success) {
         notify(data.message || "OTP sent to your email!", true);
+        // Use encodeURIComponent so special chars in email are safe in URL
         router.push("/verify-otp?email=" + encodeURIComponent(payload.email));
       } else {
         notify(data.message || "Registration failed", false);

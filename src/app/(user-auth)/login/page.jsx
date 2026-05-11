@@ -63,9 +63,9 @@ export default function LoginPage() {
 
       notify("Login Successful", true);
 
-      // Refresh to update server-side user state in header
-      router.push("/");
-      router.refresh();
+      // Hard redirect - faster than router.push + router.refresh()
+      // This forces server to re-run getUser() so header shows user name
+      window.location.href = '/';
 
     } catch (error) {
       console.error('Login error:', error);
