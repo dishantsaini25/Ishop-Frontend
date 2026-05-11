@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
     const payload = {
       name: event.target.name.value,
@@ -30,23 +30,56 @@ export default function RegisterPage() {
       notify("Password and confirm password must be same", false);
       return;
     }
-    axiosInstance.post("user/register", payload).then((response) => {
-      console.log(response)
-      if (response.data.success) {
+    
+    console.log('Registering with payload:', { ...payload, password: '***' });
+    console.log('API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+    
+    try {
+      // Use fetch instead of axios for better error handling
+      const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const url = `${baseUrl}/user/register`;
+      
+      console.log('Making request to:', url);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Registration failed' }));
+        notify(errorData.message || 'Registration failed', false);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Registration response:', data);
+      
+      if (data.success) {
         event.target.name.value = "";
         event.target.email.value = "";
         event.target.password.value = "";
         event.target.confirmPassword.value = "";
-        router.push("/verify-otp?email=" + payload.email)
-
+        notify(data.message || "Registration successful! Check your email for OTP.", true);
+        router.push("/verify-otp?email=" + payload.email);
+      } else {
+        notify(data.message || "Registration failed", false);
       }
-      notify(response.data.message, response.data.success)
-    }).catch((error) => {
-      console.log(error, "response")
-      notify("Internal Server Error", false);
-    })
-
-
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        notify("Cannot connect to server. Please check if backend is running.", false);
+      } else {
+        notify("Network error. Please try again.", false);
+      }
+    }
   }
 
   return (

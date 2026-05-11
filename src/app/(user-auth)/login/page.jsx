@@ -34,6 +34,8 @@ export default function LoginPage() {
 
       const response = await axiosInstance.post("/user/login", payload);
 
+      console.log('Login response:', response.data);
+
       if (!response.data.success) {
         notify(response.data.message, false);
         return;
@@ -48,67 +50,84 @@ export default function LoginPage() {
         cartItems = [];
       }
 
-      // Cart sync
-      try {
-        const cart_response = await axiosInstance.post("/cart/cart-sync", {
-          cart: cartItems,
-          user_id: response.data?.data.id,
-        });
+      // Cart sync - only if there are items in cart
+      if (cartItems.length > 0) {
+        try {
+          const cart_response = await axiosInstance.post("/cart/cart-sync", {
+            cart: cartItems,
+            user_id: response.data?.data.id,
+          });
 
-        const cartResponse = cart_response.data.data.cart;
+          const cartResponse = cart_response.data.data.cart;
 
-        let final_total = 0;
-        let original_total = 0;
+          let final_total = 0;
+          let original_total = 0;
 
-        const items = cartResponse.map((data) => {
-          const {
-            _id,
-            final_price,
-            original_price,
-            discount_price,
-            thumbnail,
-            stock,
-            name,
-          } = data.productId;
+          const items = cartResponse.map((data) => {
+            const {
+              _id,
+              final_price,
+              original_price,
+              discount_price,
+              thumbnail,
+              stock,
+              name,
+            } = data.productId;
 
-          final_total += Number(data.qty * final_price);
-          original_total += Number(data.qty * original_price);
+            final_total += Number(data.qty * final_price);
+            original_total += Number(data.qty * original_price);
 
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
-          const discountPct = original_price > 0
-            ? Math.round(((original_price - final_price) / original_price) * 100)
-            : 0;
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+            const discountPct = original_price > 0
+              ? Math.round(((original_price - final_price) / original_price) * 100)
+              : 0;
 
-          return {
-            name,
-            id: _id,
-            final_price,
-            original_price,
-            discount_price,
-            discount_percentage: discountPct,
-            thumbnail: `${baseUrl}/images/product/main/${thumbnail}`,
-            stock,
-            qty: data.qty,
-          };
-        });
+            return {
+              name,
+              id: _id,
+              final_price,
+              original_price,
+              discount_price,
+              discount_percentage: discountPct,
+              thumbnail: `${baseUrl}/images/product/main/${thumbnail}`,
+              stock,
+              qty: data.qty,
+            };
+          });
 
-        localStorage.setItem(
-          "cart",
-          JSON.stringify({
-            items,
-            final_total,
-            original_total,
-          })
-        );
-      } catch (error) {
-        console.log("Cart Sync Error:", error);
+          localStorage.setItem(
+            "cart",
+            JSON.stringify({
+              items,
+              final_total,
+              original_total,
+            })
+          );
+        } catch (error) {
+          console.log("Cart Sync Error:", error);
+          // Don't block login if cart sync fails
+        }
       }
 
       notify("Login Successful", true);
-      router.push("/");
+      
+      // Small delay to ensure cookie is set
+      setTimeout(() => {
+        router.push("/");
+        router.refresh(); // Force refresh to update user state
+      }, 500);
+      
     } catch (error) {
-      console.log(error);
-      notify("Internal Server Error", false);
+      console.error('Login error:', error);
+      if (error.code === 'ECONNABORTED') {
+        notify("Request timeout. Please try again.", false);
+      } else if (error.response) {
+        notify(error.response.data?.message || "Login failed", false);
+      } else if (error.request) {
+        notify("Network error. Please check your connection.", false);
+      } else {
+        notify("Internal Server Error", false);
+      }
     } finally {
       setLoading(false);
     }

@@ -11,11 +11,17 @@ export const getUser = async () => {
 
     const response = await fetch(`${baseUrl}/user/me`, {
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Authorization: token,
+        "Cookie": `user_token=${token}`,
       },
     });
+
+    if (!response.ok) {
+      console.log("Get User Response not OK:", response.status);
+      return null;
+    }
 
     const data = await response.json();
     return data.success ? data.data : null;
