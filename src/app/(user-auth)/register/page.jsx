@@ -32,18 +32,11 @@ export default function RegisterPage() {
     }
     
     console.log('Registering with payload:', { ...payload, password: '***' });
-    console.log('API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
     
     try {
-      // Use fetch instead of axios for better error handling
-      const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
-      const url = `${baseUrl}/user/register`;
-      
-      console.log('Making request to:', url);
-      
-      const response = await fetch(url, {
+      // Use Next.js API route as proxy to avoid CORS issues
+      const response = await fetch('/api/register', {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -51,12 +44,6 @@ export default function RegisterPage() {
       });
       
       console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Registration failed' }));
-        notify(errorData.message || 'Registration failed', false);
-        return;
-      }
       
       const data = await response.json();
       console.log('Registration response:', data);
@@ -73,12 +60,7 @@ export default function RegisterPage() {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        notify("Cannot connect to server. Please check if backend is running.", false);
-      } else {
-        notify("Network error. Please try again.", false);
-      }
+      notify("Registration failed. Please try again.", false);
     }
   }
 
