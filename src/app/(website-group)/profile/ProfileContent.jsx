@@ -11,7 +11,7 @@ import {
   AlertCircle, Key, Lock
 } from "lucide-react";
 import Link from "next/link";
-import { axiosInstance, notify } from "../../../../helper/helper";
+import { notify } from "../../../../helper/helper";
 
 export default function ProfileContent() {
   const router = useRouter();
@@ -70,9 +70,11 @@ export default function ProfileContent() {
 
   const fetchImageBaseUrl = async () => {
     try {
-      const response = await axiosInstance.get('/products?page=1&limit=1');
-      if (response.data.success && response.data.data.imageBaseUrl) {
-        setImageBaseUrl(response.data.data.imageBaseUrl);
+      const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const response = await fetch(`${backendUrl}/products?page=1&limit=1`);
+      const data = await response.json();
+      if (data.success && data.data.imageBaseUrl) {
+        setImageBaseUrl(data.data.imageBaseUrl);
       }
     } catch (error) {
       console.error('Fetch image base URL error:', error);
@@ -82,14 +84,12 @@ export default function ProfileContent() {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      // Use Next.js proxy to avoid CORS - reads cookie server-side
       const response = await fetch('/api/user/me', { cache: 'no-store' });
       const data = await response.json();
       if (data.success) {
         setUser(data.data);
         setEditForm({ name: data.data.name });
       } else {
-        // Not authenticated - middleware should handle this but just in case
         router.push('/login');
       }
     } catch (error) {
@@ -102,7 +102,6 @@ export default function ProfileContent() {
 
   const fetchOrders = async () => {
     try {
-      // Use Next.js proxy to avoid CORS
       const response = await fetch('/api/orders', { cache: 'no-store' });
       const data = await response.json();
       if (data.success) {
@@ -120,30 +119,24 @@ export default function ProfileContent() {
   // ==================== PROFILE FUNCTIONS ====================
 
   const updateProfile = async () => {
-    if (!editForm.name) {
-      notify('Name is required', false);
-      return;
-    }
-
+    if (!editForm.name) { notify('Name is required', false); return; }
     setIsLoading(true);
     try {
-      const response = await axiosInstance.put('/user/update', {
-        user_id: user._id,
-        name: editForm.name
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user._id, name: editForm.name }),
       });
-
-      if (response.data.success) {
+      const data = await response.json();
+      if (data.success) {
         setUser({ ...user, name: editForm.name });
         notify('Profile updated successfully', true);
         setIsEditing(false);
       } else {
-        notify(response.data.message || 'Update failed', false);
+        notify(data.message || 'Update failed', false);
       }
-    } catch (error) {
-      notify('Error updating profile', false);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch { notify('Error updating profile', false); }
+    finally { setIsLoading(false); }
   };
 
   // ==================== ADDRESS FUNCTIONS ====================
@@ -157,66 +150,59 @@ export default function ProfileContent() {
 
   const addAddress = async () => {
     if (!newAddress.addressLine1 || !newAddress.city || !newAddress.state || !newAddress.postalCode || !newAddress.contact) {
-      notify('Please fill all required fields', false);
-      return;
+      notify('Please fill all required fields', false); return;
     }
-
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post(`/user/address/${user._id}`, newAddress);
-      if (response.data.success) {
+      const response = await fetch(`/api/user/address?user_id=${user._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAddress),
+      });
+      const data = await response.json();
+      if (data.success) {
         notify('Address added successfully', true);
         setShowAddressForm(false);
-        setNewAddress({
-          addressLine1: '',
-          addressLine2: '',
-          city: '',
-          state: '',
-          postalCode: '',
-          country: 'India',
-          contact: ''
-        });
+        setNewAddress({ addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India', contact: '' });
         fetchUser();
-      }
-    } catch (error) {
-      notify('Error adding address', false);
-    } finally {
-      setIsLoading(false);
-    }
+      } else { notify(data.message || 'Error adding address', false); }
+    } catch { notify('Error adding address', false); }
+    finally { setIsLoading(false); }
   };
 
   const updateAddress = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.put(`/user/address/${user._id}/${editingAddressIndex}`, newAddress);
-      if (response.data.success) {
+      const response = await fetch(`/api/user/address?user_id=${user._id}&index=${editingAddressIndex}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAddress),
+      });
+      const data = await response.json();
+      if (data.success) {
         notify('Address updated successfully', true);
         setEditingAddressIndex(null);
         setShowAddressForm(false);
         fetchUser();
-      }
-    } catch (error) {
-      notify('Error updating address', false);
-    } finally {
-      setIsLoading(false);
-    }
+      } else { notify(data.message || 'Error updating address', false); }
+    } catch { notify('Error updating address', false); }
+    finally { setIsLoading(false); }
   };
 
   const deleteAddress = async (index) => {
     if (!confirm('Are you sure you want to delete this address?')) return;
-
     setIsLoading(true);
     try {
-      const response = await axiosInstance.delete(`/user/address/${user._id}/${index}`);
-      if (response.data.success) {
+      const response = await fetch(`/api/user/address?user_id=${user._id}&index=${index}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.success) {
         notify('Address deleted successfully', true);
         fetchUser();
-      }
-    } catch (error) {
-      notify('Error deleting address', false);
-    } finally {
-      setIsLoading(false);
-    }
+      } else { notify(data.message || 'Error deleting address', false); }
+    } catch { notify('Error deleting address', false); }
+    finally { setIsLoading(false); }
   };
 
   const editAddress = (address, index) => {
@@ -229,55 +215,35 @@ export default function ProfileContent() {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-
     if (!passwordData.current_password || !passwordData.new_password || !passwordData.confirm_password) {
-      notify('Please fill all fields', false);
-      return;
+      notify('Please fill all fields', false); return;
     }
-
     if (passwordData.new_password !== passwordData.confirm_password) {
-      notify('New password and confirm password do not match', false);
-      return;
+      notify('New password and confirm password do not match', false); return;
     }
-
     if (passwordData.new_password.length < 6) {
-      notify('Password must be at least 6 characters', false);
-      return;
+      notify('Password must be at least 6 characters', false); return;
     }
-
     setIsChangingPassword(true);
-
     try {
-      const response = await axiosInstance.put('/user/change-password', {
-        user_id: user._id,
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password
+      const response = await fetch('/api/user/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user._id,
+          current_password: passwordData.current_password,
+          new_password: passwordData.new_password,
+        }),
       });
-
-      if (response.data.success) {
+      const data = await response.json();
+      if (data.success) {
         notify('Password changed successfully!', true);
-        setPasswordData({
-          current_password: '',
-          new_password: '',
-          confirm_password: ''
-        });
+        setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
       } else {
-        notify(response.data.message, false);
+        notify(data.message || 'Failed to change password', false);
       }
-    } catch (error) {
-      console.error("Password change error:", error);
-
-      if (error.response) {
-        const errorMessage = error.response.data?.message || 'Failed to change password';
-        notify(errorMessage, false);
-      } else if (error.request) {
-        notify('Network error. Please check your connection.', false);
-      } else {
-        notify('An error occurred. Please try again.', false);
-      }
-    } finally {
-      setIsChangingPassword(false);
-    }
+    } catch { notify('An error occurred. Please try again.', false); }
+    finally { setIsChangingPassword(false); }
   };
 
   // ==================== LOGOUT FUNCTIONS ====================

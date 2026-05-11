@@ -5,9 +5,9 @@ export async function POST(request) {
     const body = await request.json();
     const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
-    // 35 second timeout - backend needs time for DB + email sending
+    // 15 second timeout - backend now responds immediately (email sent in background)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     let response;
     try {
@@ -21,13 +21,8 @@ export async function POST(request) {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        // Backend took too long - but user might have been created
-        // Tell them to try logging in or check email
         return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Server is slow. If you already registered, check your email for OTP or try again.' 
-          },
+          { success: false, message: 'Server timeout. Please try again.' },
           { status: 200 }
         );
       }
