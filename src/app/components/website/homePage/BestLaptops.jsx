@@ -209,7 +209,7 @@ export default function BestLaptops() {
                 )}
 
                 <img
-                  src={product.thumbnail ? `${imageBaseUrl}/main/${product.thumbnail}` : "/image/Best-laptop.png"}
+                  src={product.thumbnail?.startsWith('http') ? product.thumbnail : (product.thumbnail ? `${imageBaseUrl}/main/${product.thumbnail}` : "/image/Best-laptop.png")}
                   alt={product.name}
                   className="h-40 w-auto object-contain group-hover:scale-105 transition duration-300"
                   onError={(e) => {

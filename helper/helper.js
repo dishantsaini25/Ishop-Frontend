@@ -45,6 +45,21 @@ axiosInstance.interceptors.response.use(
 
 // ==================== HELPER FUNCTIONS ====================
 
+/**
+ * Get proper image URL - handles both Cloudinary full URLs and local filenames
+ * @param {string} imageBaseUrl - base URL from backend (empty string for Cloudinary)
+ * @param {string} filename - either full URL or just filename
+ * @param {string} subfolder - 'main' or 'other'
+ */
+const getImageUrl = (imageBaseUrl, filename, subfolder = 'main') => {
+  if (!filename) return null;
+  // Already a full URL (Cloudinary or any http)
+  if (filename.startsWith('http')) return filename;
+  // Local filename - combine with base
+  const base = (imageBaseUrl || '').replace(/\/$/, '');
+  return `${base}/${subfolder}/${filename}`;
+};
+
 function createSlug(slug) {
   return slug
     .toLowerCase()
@@ -148,6 +163,7 @@ export {
   axiosInstance, 
   titleToSlug, 
   formatIndianCurrency,
+  getImageUrl,
   formatDate,
   formatDateTime,
   getOrderStatusColor,

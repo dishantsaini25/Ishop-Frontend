@@ -4,8 +4,10 @@ import Link from "next/link";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import AddToCartBtn from "./AddToCartBtn";
 
+import { getImageUrl } from "../../../../../helper/helper";
+
 export default function ProductCard({ product, imageBaseUrl, user }) {
-  const imageUrl = `${imageBaseUrl}/main/${product.thumbnail}`;
+  const imageUrl = getImageUrl(imageBaseUrl, product.thumbnail, 'main');
   const [fav, setFav] = useState(false);
   const discountAmount = (product.original_price || 0) - (product.final_price || 0);
   

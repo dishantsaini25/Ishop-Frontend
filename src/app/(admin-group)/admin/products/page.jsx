@@ -55,7 +55,7 @@ export default async function page() {
                   {prod.thumbnail ? (
                     <img
                       className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg"
-                      src={imageBaseUrl + "main/" + prod.thumbnail}
+                      src={prod.thumbnail?.startsWith('http') ? prod.thumbnail : imageBaseUrl + "main/" + prod.thumbnail}
                       alt={prod.name}
                     />
                   ) : (
@@ -129,7 +129,7 @@ export default async function page() {
               {prod.thumbnail ? (
                 <img
                   className="w-14 h-14 object-cover rounded-lg"
-                  src={imageBaseUrl + "main/" + prod.thumbnail}
+                  src={prod.thumbnail?.startsWith('http') ? prod.thumbnail : imageBaseUrl + "main/" + prod.thumbnail}
                   alt={prod.name}
                 />
               ) : (

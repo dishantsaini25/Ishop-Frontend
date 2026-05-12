@@ -153,12 +153,10 @@ export default function BestSellerTabs() {
               <div className="flex items-center justify-center bg-[#F8FAFC] rounded-2xl p-6 h-48">
                 {product.thumbnail ? (
                   <img
-                    src={`${imageBaseUrl}/main/${product.thumbnail}`}
+                    src={product.thumbnail?.startsWith('http') ? product.thumbnail : `${imageBaseUrl}/main/${product.thumbnail}`}
                     alt={product.name}
                     className="max-h-32 w-auto object-contain group-hover:scale-105 transition duration-300"
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/150?text=No+Image";
-                    }}
+                    onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=No+Image"; }}
                   />
                 ) : (
                   <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">

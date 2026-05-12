@@ -208,7 +208,7 @@ export default function TopCellphones() {
                 )}
 
                 <img
-                  src={product.thumbnail ? `${imageBaseUrl}/main/${product.thumbnail}` : "/image/Top-phone.png"}
+                  src={product.thumbnail?.startsWith('http') ? product.thumbnail : (product.thumbnail ? `${imageBaseUrl}/main/${product.thumbnail}` : "/image/Top-phone.png")}
                   alt={product.name}
                   className="h-40 w-auto object-contain group-hover:scale-105 transition duration-300"
                   onError={(e) => {

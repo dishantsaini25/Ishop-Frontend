@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
   }
 
   const imageUrl = product.thumbnail
-    ? `${productData?.imageBaseUrl}/main/${product.thumbnail}`
+    ? (product.thumbnail.startsWith('http') ? product.thumbnail : `${productData?.imageBaseUrl}/main/${product.thumbnail}`)
     : null;
 
   return {
@@ -62,7 +62,7 @@ export default async function ProductPage({ params }) {
         "@type": "Product",
         name: product.name,
         description: product.description || "",
-        image: product.thumbnail ? `${imageBaseUrl}/main/${product.thumbnail}` : "",
+        image: product.thumbnail ? (product.thumbnail.startsWith('http') ? product.thumbnail : `${imageBaseUrl}/main/${product.thumbnail}`) : "",
         sku: product._id,
         brand: {
           "@type": "Brand",

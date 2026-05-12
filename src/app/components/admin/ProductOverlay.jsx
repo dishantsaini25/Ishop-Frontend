@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import StatusBadge from "./StatusBtn";
 import { IoClose } from "react-icons/io5";
-import { FiTrash2, FiX } from "react-icons/fi";
+import { FiTrash2 } from "react-icons/fi";
 import { notify } from "../../../../helper/helper";
+import { useRouter } from "next/navigation";
 
 const bUrl = () => (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
@@ -74,12 +75,10 @@ const ProductOverlay = ({ product, imageBaseUrl, isOpen, onClose }) => {
           {/* Main Image */}
           <div className="mb-4">
             <img
-              src={`${imageBaseUrl}/main/${product.thumbnail}`}
+              src={product.thumbnail?.startsWith('http') ? product.thumbnail : `${imageBaseUrl}/main/${product.thumbnail}`}
               alt={product.name}
               className="w-20 h-20 object-cover rounded-lg border"
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/80?text=No+Image";
-              }}
+              onError={(e) => { e.target.src = "https://via.placeholder.com/80?text=No+Image"; }}
             />
           </div>
 
@@ -142,12 +141,10 @@ const ProductOverlay = ({ product, imageBaseUrl, isOpen, onClose }) => {
                 {images.map((img, index) => (
                   <div key={index} className="relative group">
                     <img
-                      src={`${imageBaseUrl}/other/${img}`}
+                      src={img.startsWith('http') ? img : `${imageBaseUrl}/other/${img}`}
                       alt={`Product image ${index + 1}`}
                       className="w-full h-20 sm:h-24 object-cover rounded-lg border"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/96?text=No+Image";
-                      }}
+                      onError={(e) => { e.target.src = "https://via.placeholder.com/96?text=No+Image"; }}
                     />
                     <button
                       onClick={() => handleSingleDelete(img)}

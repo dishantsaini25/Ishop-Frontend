@@ -111,8 +111,10 @@ export default function DealsOfTheDay() {
 
   // All images: thumbnail + other_images
   const allImages = [
-    imageBaseUrl + "main/" + thumbnail,
-    ...other_images.slice(0, 4).map((img) => imageBaseUrl + "other/" + img),
+    thumbnail?.startsWith('http') ? thumbnail : imageBaseUrl + "main/" + thumbnail,
+    ...other_images.slice(0, 4).map((img) =>
+      img.startsWith('http') ? img : imageBaseUrl + "other/" + img
+    ),
   ];
 
   return (
