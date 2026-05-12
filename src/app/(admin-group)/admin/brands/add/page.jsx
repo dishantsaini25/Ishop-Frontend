@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { FiArrowLeft, FiX, FiSave, FiUpload, FiTag, FiLink, FiFolder, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
-import { axiosInstance, createSlug, notify } from "../../../../../../helper/helper";
+import { createSlug, notify } from "../../../../../../helper/helper";
 import Link from "next/link";
 import Select from "react-select/base";
 
@@ -23,19 +23,19 @@ export default function AddBrandPage() {
 
   /* ---------- FETCH CATEGORY ---------- */
   useEffect(() => {
-    axiosInstance.get("category?status=true")
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    fetch(`${backendUrl}/category?status=true`, { credentials: 'include' })
+      .then(r => r.json())
       .then((res) => {
-        if (res.data.success) {
-          const categoryOptions = res.data.data.category.map((cat) => ({
+        if (res.success) {
+          const categoryOptions = res.data.category.map((cat) => ({
             value: cat._id,
             label: cat.name
           }));
           setCategories(categoryOptions);
         }
       })
-      .catch(() => {
-        notify("Category Load Error", false);
-      });
+      .catch(() => notify("Category Load Error", false));
   }, []);
 
   /* ---------- GENERATE SLUG ---------- */
@@ -85,25 +85,19 @@ export default function AddBrandPage() {
     const categoryIds = selectedCategories.map((cat) => cat.value);
     form.append("category_ids", JSON.stringify(categoryIds));
 
-    axiosInstance.post("brands/create", form, {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    fetch(`${backendUrl}/brands/create`, {
+      method: 'POST',
+      credentials: 'include',
+      body: form,
     })
-    .then((response) => {
-      notify(response.data.message, response.data.success);
-
-      if (response.data.success) {
-        router.push("/admin/brands");
-      }
+    .then(r => r.json())
+    .then((data) => {
+      notify(data.message, data.success);
+      if (data.success) router.push("/admin/brands");
     })
-    .catch((error) => {
-      console.log(error);
-      notify("Internal Server Error", false);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+    .catch(() => notify("Internal Server Error", false))
+    .finally(() => setLoading(false));
   };
 
   // Custom styles for React Select
