@@ -12,16 +12,12 @@ export default function ByBrand() {
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-
-    fetchBrand({
-      status: true,
-      category_slug: category_slug
-    }).then((res) => {
-
-      setBrands(res?.brand || []);
-
-    });
-
+    fetchBrand({ status: true, category_slug: category_slug })
+      .then((res) => {
+        // Only show brands that have at least 1 product
+        const filtered = (res?.brand || []).filter(b => (b.productCount || 0) > 0);
+        setBrands(filtered);
+      });
   }, [category_slug]);
 
   return <BrandList brands={brands} />;
