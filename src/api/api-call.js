@@ -1,14 +1,13 @@
-import { axiosInstance } from "../../helper/helper";
+// All fetches go directly to backend - works both server-side and client-side
+// No axiosInstance needed here since these are public/read endpoints
 
-// Helper: detect server vs client
-const isServer = () => typeof window === 'undefined';
+const backendUrl = () =>
+  (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
-// Helper: make a fetch call on server side
-const serverFetch = async (path) => {
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
-  const fullUrl = `${baseUrl}/${path}`;
-  const response = await fetch(fullUrl, {
+const apiFetch = async (path) => {
+  const response = await fetch(`${backendUrl()}/${path}`, {
     cache: 'no-store',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
   });
   return response.json();
@@ -16,25 +15,14 @@ const serverFetch = async (path) => {
 
 export const fetchCategory = async (queryObject = {}) => {
   const query = new URLSearchParams();
-
   if (queryObject.id) query.append("id", queryObject.id);
   if (queryObject.status) query.append("status", queryObject.status);
   if (queryObject.is_top) query.append("is_top", queryObject.is_top);
   if (queryObject.limit) query.append("limit", queryObject.limit);
   if (queryObject.is_home) query.append("is_home", queryObject.is_home);
 
-  const path = `category?${query.toString()}`;
-
   try {
-    let data;
-
-    if (isServer()) {
-      data = await serverFetch(path);
-    } else {
-      const response = await axiosInstance.get(path);
-      data = response.data;
-    }
-
+    const data = await apiFetch(`category?${query.toString()}`);
     if (data.success) {
       return {
         category: data.data?.category || [],
@@ -42,61 +30,14 @@ export const fetchCategory = async (queryObject = {}) => {
       };
     }
     return { category: [], imageBaseUrl: "" };
-
   } catch (error) {
-    console.log("Fetch Category Error:", error.message || error);
+    console.log("Fetch Category Error:", error.message);
     return { category: [], imageBaseUrl: "" };
   }
 };
 
-
-
-
-// export const fetchBrand = (queryObject = {}) => {
-
-//   const query = new URLSearchParams();
-
-//   if (queryObject.id)
-//     query.append("id", queryObject.id);
-
-//   if (queryObject.status !== undefined)
-//     query.append("status", queryObject.status);
-
-//   if (queryObject.category_slug)
-//     query.append("category_slug", queryObject.category_slug);
-
-//   const queryString = query.toString();
-
-//   const url = queryString ? `brands?${queryString}` : `brands`;
-
-//   return axiosInstance.get(url)
-//     .then(res => {
-
-//       if (res.data.success) {
-
-//         return {
-//           brand: res.data.data?.brand || [],
-//           imageBaseUrl: res.data.data?.imageBaseUrl || ""
-//         };
-
-//       }
-
-//       return null;
-
-//     })
-//     .catch((error) => {
-
-//       console.log("Fetch Brand Error:", error.response?.data || error.message);
-//       return null;
-
-//     });
-// };
-
-
-
 export const fetchBrand = async (queryObject = {}) => {
   const query = new URLSearchParams();
-
   if (queryObject.id) query.append("id", queryObject.id);
   if (queryObject.status !== undefined) query.append("status", queryObject.status);
   if (queryObject.category_slug) query.append("category_slug", queryObject.category_slug);
@@ -106,114 +47,40 @@ export const fetchBrand = async (queryObject = {}) => {
   const path = queryString ? `brands?${queryString}` : `brands`;
 
   try {
-    let data;
-
-    if (isServer()) {
-      data = await serverFetch(path);
-    } else {
-      const response = await axiosInstance.get(path);
-      data = response.data;
-    }
-
+    const data = await apiFetch(path);
     if (data.success) {
       return {
         brand: data.data?.brand || [],
         imageBaseUrl: data.data?.imageBaseUrl || "",
       };
     }
-
     return { brand: [], imageBaseUrl: "" };
   } catch (error) {
-    console.log("Fetch Brand Error:", error.message || error);
+    console.log("Fetch Brand Error:", error.message);
     return { brand: [], imageBaseUrl: "" };
   }
 };
-
-
 
 export const fetchColors = async (queryObject = {}) => {
   const query = new URLSearchParams();
   if (queryObject.id) query.append("id", queryObject.id);
   if (queryObject.status) query.append("status", queryObject.status);
 
-  const path = `colors?${query.toString()}`;
-
   try {
-    let data;
-
-    if (isServer()) {
-      data = await serverFetch(path);
-    } else {
-      const response = await axiosInstance.get(path);
-      data = response.data;
-    }
-
+    const data = await apiFetch(`colors?${query.toString()}`);
     if (data.success) {
       return { colors: data.data.colors };
     }
-    return null;
-  } catch {
-    return null;
+    return { colors: [] };
+  } catch (error) {
+    console.log("Fetch Colors Error:", error.message);
+    return { colors: [] };
   }
 };
-
-
-
-// export const fetchProduct = async (queryObject = {}) => {
-//   try {
-//     const query = new URLSearchParams();
-
-//     if (queryObject.id) query.append("id", queryObject.id);
-//     if (queryObject.category_slug) query.append("category_slug", queryObject.category_slug);
-//     if (queryObject.brand_slug) query.append("brand_slug", queryObject.brand_slug);
-//     if (queryObject.color_slug) query.append("color_slug", queryObject.color_slug);
-
-
-//     if (queryObject.min_price)
-//       query.append("min_price", queryObject.min_price);
-
-//     if (queryObject.max_price)
-//       query.append("max_price", queryObject.max_price);
-
-//     if (queryObject.status !== undefined) query.append("status", queryObject.status);
-//      if (queryObject.page)
-//       query.append("page", queryObject.page);
-
-//     if (queryObject.sort)
-//       query.append("sort", queryObject.sort);
-
-//     const queryString = query.toString();
-//     const url = queryString ? `products?${queryString}` : `products`;
-
-//     const response = await axiosInstance.get(url);
-
-//     if (response.data.success) {
-//       return {
-//         product: response.data.data?.product || [],
-//         colors: response.data.data?.colors || [],
-//         brands: response.data.data?.brands || [],
-//         categories: response.data.data?.categories || [],
-//         imageBaseUrl: response.data.data?.imageBaseUrl || "",
-//         maxPrice: response.data.data?.maxPrice || 5000,
-//          total: response.data.data?.total || 0,
-//         currentPage: response.data.data?.currentPage || 1,
-//         totalPages: response.data.data?.totalPages || 1,
-//       };
-//     }
-
-//     return null;
-//   } catch (error) {
-//     console.log("Fetch Product Error:", error.response?.data || error.message);
-//     return null;
-//   }
-// };
-
-
 
 export const fetchProduct = async (queryObject = {}) => {
   try {
     const query = new URLSearchParams();
-
     if (queryObject.id) query.append("id", queryObject.id);
     if (queryObject.category_slug) query.append("category_slug", queryObject.category_slug);
     if (queryObject.brand_slug) query.append("brand_slug", queryObject.brand_slug);
@@ -230,18 +97,12 @@ export const fetchProduct = async (queryObject = {}) => {
     if (queryObject.is_hot !== undefined) query.append("is_hot", queryObject.is_hot);
     if (queryObject.is_featured !== undefined) query.append("is_featured", queryObject.is_featured);
     if (queryObject.show_home !== undefined) query.append("show_home", queryObject.show_home);
+    if (queryObject.search) query.append("search", queryObject.search);
 
     const queryString = query.toString();
     const path = queryString ? `products?${queryString}` : `products`;
 
-    let data;
-
-    if (isServer()) {
-      data = await serverFetch(path);
-    } else {
-      const response = await axiosInstance.get(path);
-      data = response.data;
-    }
+    const data = await apiFetch(path);
 
     if (data.success) {
       return {
@@ -256,14 +117,9 @@ export const fetchProduct = async (queryObject = {}) => {
         totalPages: data.data?.totalPages || 1,
       };
     }
-
     return null;
   } catch (error) {
-    console.log("Fetch Product Error:", error.message || error);
+    console.log("Fetch Product Error:", error.message);
     return null;
   }
 };
-
-
-
-

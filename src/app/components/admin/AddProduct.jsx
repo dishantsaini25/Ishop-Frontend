@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Select from "react-select/base";
 import { FiLink } from "react-icons/fi";
-import { axiosInstance, createSlug, notify } from "../../../../helper/helper";
+import { createSlug, notify } from "../../../../helper/helper";
 import { FiImage, FiArrowLeft, FiSave, FiPackage, FiTag, FiGrid, FiDroplet, FiFileText, FiDollarSign, FiPercent } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -81,25 +81,19 @@ export default function AddProduct({ category, brand, color }) {
     form.append("color_ids", JSON.stringify(SelColors));
     form.append("thumbnail", file);
 
-    axiosInstance.post("products/create", form, {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    fetch(`${backendUrl}/products/create`, {
+      method: 'POST',
+      credentials: 'include',
+      body: form,
     })
-    .then((response) => {
-      notify(response.data.message, response.data.success);
-
-      if (response.data.success) {
-        router.push("/admin/products");
-      }
+    .then(r => r.json())
+    .then((data) => {
+      notify(data.message, data.success);
+      if (data.success) router.push("/admin/products");
     })
-    .catch((error) => {
-      console.log(error);
-      notify("Internal Server Error", false);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+    .catch(() => notify("Internal Server Error", false))
+    .finally(() => setLoading(false));
   }
 
   return (

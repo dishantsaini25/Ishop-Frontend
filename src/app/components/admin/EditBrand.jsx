@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import Select from "react-select/base";
 import { FiTag, FiLink, FiImage, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
-import { axiosInstance, createSlug, notify } from "../../../../helper/helper";
+import { createSlug, notify } from "../../../../helper/helper";
 import Link from "next/link";
 
 export default function EditBrand({ brand, imageBaseUrl }) {
@@ -20,20 +20,16 @@ export default function EditBrand({ brand, imageBaseUrl }) {
 
   /* ---------- FETCH CATEGORY ---------- */
   useEffect(() => {
-
-    axiosInstance.get("category?status=true")
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    fetch(`${backendUrl}/category?status=true`, { credentials: 'include' })
+      .then(r => r.json())
       .then((res) => {
-
-        if (res.data.success) {
-
-          const options = res.data.data.category.map((cat) => ({
+        if (res.success) {
+          const options = res.data.category.map((cat) => ({
             value: cat._id,
             label: cat.name
           }));
-
           setCategories(options);
-
-          /* ---------- PRESELECT BRAND CATEGORY ---------- */
           if (brand.category_ids) {
             const selected = brand.category_ids.map((cat) => ({
               value: cat._id,
@@ -44,7 +40,6 @@ export default function EditBrand({ brand, imageBaseUrl }) {
         }
       })
       .catch(() => notify("Category Load Error", false));
-
   }, []);
 
   /* ---------- GENERATE SLUG ---------- */
@@ -86,21 +81,19 @@ export default function EditBrand({ brand, imageBaseUrl }) {
       form.append("image", event.target.brandImage.files[0]);
     }
 
-    axiosInstance
-      .put(`brands/${brand._id}`, form)
-      .then((response) => {
-        notify(response.data.message, response.data.success);
-        if (response.data.success) {
-          router.push("/admin/brands");
-        }
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    fetch(`${backendUrl}/brands/${brand._id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      body: form,
+    })
+      .then(r => r.json())
+      .then((data) => {
+        notify(data.message, data.success);
+        if (data.success) router.push("/admin/brands");
       })
-      .catch((error) => {
-        console.log(error);
-        notify("Internal Server Error", false);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .catch(() => notify("Internal Server Error", false))
+      .finally(() => setLoading(false));
   };
 
   return (
