@@ -4,18 +4,16 @@ import React, { useState, useEffect } from "react";
 import StatusBadge from "./StatusBtn";
 import { IoClose } from "react-icons/io5";
 import { FiTrash2, FiX } from "react-icons/fi";
-import { axiosInstance, notify } from "../../../../helper/helper";
-import { useRouter } from "next/navigation";
+import { notify } from "../../../../helper/helper";
+
+const bUrl = () => (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 const ProductOverlay = ({ product, imageBaseUrl, isOpen, onClose }) => {
-
   const router = useRouter();
   const [images, setImages] = useState([]);
 
   useEffect(() => {
-    if (product?.other_images) {
-      setImages(product.other_images);
-    }
+    if (product?.other_images) setImages(product.other_images);
   }, [product]);
 
   if (!isOpen || !product) return null;
@@ -23,32 +21,29 @@ const ProductOverlay = ({ product, imageBaseUrl, isOpen, onClose }) => {
   const Info = ({ label, value }) => (
     <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-medium text-xs sm:text-sm wrap-break-words">{value || "-"}</p>
+      <p className="font-medium text-xs sm:text-sm">{value || "-"}</p>
     </div>
   );
 
-  const handleSingleDelete = (imageName) => {
-    axiosInstance
-      .delete(`products/other-images/${product._id}?imageName=${imageName}`)
-      .then((res) => {
-        notify(res.data.message, true);
-        setImages(images.filter((img) => img !== imageName));
-        router.refresh();
-      })
-      .catch(() => notify("Delete Failed", false));
+  const handleSingleDelete = async (imageName) => {
+    try {
+      const res = await fetch(`${bUrl()}/products/other-images/${product._id}?imageName=${imageName}`, { method: 'DELETE', credentials: 'include' });
+      const data = await res.json();
+      notify(data.message, true);
+      setImages(images.filter((img) => img !== imageName));
+      router.refresh();
+    } catch { notify("Delete Failed", false); }
   };
 
-  const handleDeleteAll = () => {
-    if (window.confirm("Delete all images?")) {
-      axiosInstance
-        .delete(`products/other-images/${product._id}`)
-        .then((res) => {
-          notify(res.data.message, true);
-          setImages([]);
-          router.refresh();
-        })
-        .catch(() => notify("Delete Failed", false));
-    }
+  const handleDeleteAll = async () => {
+    if (!window.confirm("Delete all images?")) return;
+    try {
+      const res = await fetch(`${bUrl()}/products/other-images/${product._id}`, { method: 'DELETE', credentials: 'include' });
+      const data = await res.json();
+      notify(data.message, true);
+      setImages([]);
+      router.refresh();
+    } catch { notify("Delete Failed", false); }
   };
 
   return (

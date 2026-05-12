@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { FiTag, FiLink, FiImage, FiArrowLeft, FiSave, FiX, FiUpload } from "react-icons/fi";
-import { axiosInstance, createSlug, notify } from "../../../../../../helper/helper";
+import { createSlug, notify } from "../../../../../../helper/helper";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -86,18 +86,19 @@ export default function AddCategoryPage() {
       form.append("slug", slugRef.current.value);
       form.append("category_image", file);
 
-      const response = await axiosInstance.post("category/create", form, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const res = await fetch(`${backendUrl}/category/create`, {
+        method: 'POST',
+        credentials: 'include',
+        body: form,
       });
+      const data = await res.json();
 
-      if (response.data.success) {
-        router.push("/admin/categories");
-      }
-
-      notify(response.data.message, response.data.success);
+      if (data.success) router.push("/admin/categories");
+      notify(data.message, data.success);
     } catch (error) {
-      console.log(error);
-      notify(error.response?.data?.message || "Internal server error", false);
+      console.error(error);
+      notify("Upload failed. Please try again.", false);
     } finally {
       setLoading(false);
     }

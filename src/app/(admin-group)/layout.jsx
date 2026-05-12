@@ -7,10 +7,19 @@ import "../globals.css";
 import SideMenu from "../components/admin/sideMenu";
 import Header from "../components/admin/Header";
 import { ToastContainer } from "react-toastify";
-import { axiosInstance } from "../../../helper/helper";
 
 
-const geistSans = Geist({
+  const checkAuth = async () => {
+    if (pathname === "/admin/login") { setLoading(false); setAuthorized(true); return; }
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+    try {
+      const res = await fetch(`${backendUrl}/admin/me`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) setAuthorized(true);
+      else router.push("/admin/login");
+    } catch { router.push("/admin/login"); }
+    finally { setLoading(false); }
+  };const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -51,8 +60,6 @@ export default function RootLayout({ children }) {
       setLoading(false);
     }
   };
-
-  if (loading) {
     return (
       <html lang="en">
         <body className="bg-gray-100">

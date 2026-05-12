@@ -4,10 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { FiBell, FiUser, FiLogOut, FiSettings, FiBellOff } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
-import { axiosInstance, notify } from "../../../../helper/helper";
+import { notify } from "../../../../helper/helper";
 
-
-
+const bUrl = () => (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 export default function Header() {
     const router = useRouter();
@@ -22,89 +21,54 @@ export default function Header() {
         fetchAdminData();
         connectSocket();
         fetchNotifications();
-        
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
-        };
+        return () => { if (socketRef.current) socketRef.current.disconnect(); };
     }, []);
 
     const fetchAdminData = async () => {
         try {
-            const response = await axiosInstance.get('/admin/me');
-            if (response.data.success) {
-                setAdmin(response.data.data);
-            }
-        } catch (error) {
-            console.error(error);
-        }
+            const res = await fetch(`${bUrl()}/admin/me`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) setAdmin(data.data);
+        } catch {}
     };
 
     const connectSocket = () => {
         const token = document.cookie.split('admin_token=')[1];
-        socketRef.current = io(process.env.NEXT_PUBLIC_API_BASE_URL, {
-            auth: { token }
-        });
-        
+        socketRef.current = io(process.env.NEXT_PUBLIC_API_BASE_URL, { auth: { token } });
         socketRef.current.on('new_notification', (notification) => {
             setNotifications(prev => [notification, ...prev]);
             setUnreadCount(prev => prev + 1);
-            
-            // Show toast notification
             notify(notification.message, true);
-            
-            // Play sound (optional)
-            // const audio = new Audio('/notification.mp3');
-            // audio.play();
         });
     };
 
-   // Line 65 ke aas paas
-const fetchNotifications = async () => {
-    try {
-        // Change this line
-        const response = await axiosInstance.get('/api/admin/notifications');  // ✅ Added /api
-        if (response.data.success) {
-            setNotifications(response.data.data);
-            setUnreadCount(response.data.data.filter(n => !n.read).length);
-        }
-    } catch (error) {
-        console.error(error);
-    }
-};
+    const fetchNotifications = async () => {
+        try {
+            const res = await fetch(`${bUrl()}/api/admin/notifications`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) { setNotifications(data.data); setUnreadCount(data.data.filter(n => !n.read).length); }
+        } catch {}
+    };
 
-const markAsRead = async (notificationId) => {
-    try {
-        // Change this line
-        await axiosInstance.put(`/api/admin/notifications/${notificationId}/read`);  // ✅ Added /api
-        setNotifications(prev => 
-            prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
-        );
-        setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-        console.error(error);
-    }
-};
+    const markAsRead = async (notificationId) => {
+        try {
+            await fetch(`${bUrl()}/api/admin/notifications/${notificationId}/read`, { method: 'PUT', credentials: 'include' });
+            setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, read: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch {}
+    };
 
-const markAllAsRead = async () => {
-    try {
-        // Change this line
-        await axiosInstance.put('/api/admin/notifications/read-all');  // ✅ Added /api
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-        setUnreadCount(0);
-    } catch (error) {
-        console.error(error);
-    }
-};
+    const markAllAsRead = async () => {
+        try {
+            await fetch(`${bUrl()}/api/admin/notifications/read-all`, { method: 'PUT', credentials: 'include' });
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch {}
+    };
 
     const handleLogout = async () => {
-        try {
-            await axiosInstance.post('/admin/logout');
-            router.push('/admin/login');
-        } catch (error) {
-            console.error(error);
-        }
+        try { await fetch(`${bUrl()}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch {}
+        router.push('/admin/login');
     };
 
     const getNotificationIcon = (type) => {

@@ -4,37 +4,38 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft } from "react-icons/fi";
-import { axiosInstance, notify, titleToSlug } from "../../../../../../../helper/helper";
+import { notify, titleToSlug } from "../../../../../../../helper/helper";
 
 export default function EditColorPage() {
   const { color_id } = useParams();
   const router = useRouter();
-
   const nameRef = useRef(null);
   const [color, setColor] = useState("#ff7b00");
+  const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
-  // Load Old Data
   useEffect(() => {
-    axiosInstance.get(`colors?id=${color_id}`).then((res) => {
-      const colorData = res.data.data.colors[0];
-      if (!colorData) return;
-      nameRef.current.value = colorData.name;
-      setColor(colorData.color_code || "#ff7b00");
-    });
+    fetch(`${backendUrl}/colors?id=${color_id}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then((res) => {
+        const colorData = res.data?.colors?.[0];
+        if (!colorData) return;
+        nameRef.current.value = colorData.name;
+        setColor(colorData.color_code || "#ff7b00");
+      });
   }, [color_id]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    const form = {
-      name: nameRef.current.value,
-      slug: titleToSlug(nameRef.current.value),
-      color_code: color
-    };
-
-    const res = await axiosInstance.put(`colors/update/${color_id}`, form);
-    notify(res.data.message, res.data.success);
-    if (res.data.success) router.push("/admin/colors");
+    try {
+      const res = await fetch(`${backendUrl}/colors/update/${color_id}`, {
+        method: 'PUT', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameRef.current.value, slug: titleToSlug(nameRef.current.value), color_code: color }),
+      });
+      const data = await res.json();
+      notify(data.message, data.success);
+      if (data.success) router.push("/admin/colors");
+    } catch { notify("Update failed", false); }
   };
 
   return (

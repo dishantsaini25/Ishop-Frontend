@@ -3,35 +3,29 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { axiosInstance, notify } from "../../../../../helper/helper";
-
+import { notify } from "../../../../../helper/helper";
 
 export default function AdminLoginPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        email: "",
-        password: ""
-    });
+    const [formData, setFormData] = useState({ email: "", password: "" });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        
+        const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
         try {
-            const response = await axiosInstance.post("/admin/login", formData);
-            if (response.data.success) {
-                notify("Login successful!", true);
-                router.push("/admin");
-            } else {
-                notify(response.data.message, false);
-            }
-        } catch (error) {
-            notify(error.response?.data?.message || "Login failed", false);
-        } finally {
-            setLoading(false);
-        }
+            const res = await fetch(`${backendUrl}/admin/login`, {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            const data = await res.json();
+            if (data.success) { notify("Login successful!", true); router.push("/admin"); }
+            else notify(data.message, false);
+        } catch { notify("Login failed", false); }
+        finally { setLoading(false); }
     };
 
     return (

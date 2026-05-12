@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft, FiSave } from "react-icons/fi";
-import { axiosInstance, notify, titleToSlug } from "../../../../../../helper/helper";
+import { notify, titleToSlug } from "../../../../../../helper/helper";
 
 export default function AddColorPage() {
   const nameRef = useRef(null);
@@ -15,23 +15,18 @@ export default function AddColorPage() {
   const submitHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const form = {
-      name: nameRef.current.value,
-      slug: titleToSlug(nameRef.current.value),
-      color_code: color
-    };
-
+    const backendUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await axiosInstance.post("colors/create", form);
-      notify(res.data.message, res.data.success);
-      if (res.data.success) router.push("/admin/colors");
-    } catch (error) {
-      console.log(error);
-      notify("Internal Server Error", false);
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch(`${backendUrl}/colors/create`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameRef.current.value, slug: titleToSlug(nameRef.current.value), color_code: color }),
+      });
+      const data = await res.json();
+      notify(data.message, data.success);
+      if (data.success) router.push("/admin/colors");
+    } catch { notify("Internal Server Error", false); }
+    finally { setLoading(false); }
   };
 
   return (
