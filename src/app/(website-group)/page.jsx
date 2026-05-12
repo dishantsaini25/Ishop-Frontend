@@ -38,7 +38,7 @@ export default async function Home() {
     limit: 10
   });
 
-  const brandsData = await fetchBrand({ status: true, is_home: true, limit: 10 });
+  const brandsData = await fetchBrand({ status: true, is_home: true, limit: 6 });
   const brands = brandsData?.brand || [];
   const brandImageBaseUrl = brandsData?.imageBaseUrl || "";
 
