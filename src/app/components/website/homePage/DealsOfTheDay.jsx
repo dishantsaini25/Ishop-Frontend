@@ -247,13 +247,12 @@ export default function DealsOfTheDay() {
             <div key={i} className="relative h-28 w-full overflow-hidden rounded-2xl bg-[#F3F4F6] cursor-pointer"
               onClick={() => setActiveImg(i + 1)}>
               <img
-                src={imageBaseUrl + "other/" + img}
+                src={img.startsWith('http') ? img : `${imageBaseUrl}other/${img}`}
                 alt={`${name} view ${i + 1}`}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
           ))}
-          {/* Fallback if no other images */}
           {other_images.length === 0 && (
             <div className="flex flex-col gap-3">
               {[1, 2, 3].map((i) => (
