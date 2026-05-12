@@ -43,8 +43,8 @@ function DeleteBtn({ api, title = "Delete Item", message = "Are you sure you wan
             const data = await response.json();
 
             if (data.success) {
-                await Swal.fire({ title: 'Deleted!', text: data.message || 'Deleted successfully.', icon: 'success', timer: 2000, timerProgressBar: true });
-                router.refresh();
+                await Swal.fire({ title: 'Deleted!', text: data.message || 'Deleted successfully.', icon: 'success', timer: 1500, timerProgressBar: true, showConfirmButton: false });
+                window.location.reload();
             } else {
                 await Swal.fire({ title: 'Error!', text: data.message || 'Something went wrong.', icon: 'error' });
             }
