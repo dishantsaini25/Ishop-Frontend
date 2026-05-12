@@ -55,7 +55,7 @@ export default function AddMultipleImages({ id, other_images, imageBaseUrl }) {
         </Link>
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 md:p-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Add Product Images</h1>
-          <p className="text-gray-500 text-xs sm:text-sm mb-6">Upload multiple images for your product</p>
+          <p className="text-gray-500 text-xs sm:text-sm mb-6">Upload multiple images for your product gallery</p>
           <form onSubmit={submitHandler} className="space-y-6">
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-2">Product Images <span className="text-red-500">*</span></label>
