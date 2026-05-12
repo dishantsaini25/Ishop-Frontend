@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import Select from "react-select/base";
+import Select from "react-select";
 import { FiTag, FiLink, FiImage, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { createSlug, notify } from "../../../../helper/helper";

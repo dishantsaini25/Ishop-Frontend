@@ -5,7 +5,7 @@ import { FiArrowLeft, FiX, FiSave, FiUpload, FiTag, FiLink, FiFolder, FiImage } 
 import { useRouter } from "next/navigation";
 import { createSlug, notify } from "../../../../../../helper/helper";
 import Link from "next/link";
-import Select from "react-select/base";
+import Select from "react-select";
 
 export default function AddBrandPage() {
 
