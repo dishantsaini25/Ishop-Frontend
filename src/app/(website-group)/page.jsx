@@ -28,16 +28,17 @@ export const metadata = {
 export default async function Home() {
   const { category = [], imageBaseUrl = "" } = await fetchCategory({
     status: true,
+    is_home: true,
     limit: 20
   });
 
   const { category: topCategoriesList = [] } = await fetchCategory({
     status: true,
-    is_home: true,
+    is_top: true,
     limit: 10
   });
 
-  const brandsData = await fetchBrand({ status: true, limit: 10 });
+  const brandsData = await fetchBrand({ status: true, is_home: true, limit: 10 });
   const brands = brandsData?.brand || [];
   const brandImageBaseUrl = brandsData?.imageBaseUrl || "";
 

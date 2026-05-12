@@ -43,12 +43,10 @@ export default function FeaturedBrands({ brands = [], imageBaseUrl = "" }) {
             <div className="w-20 h-20 flex items-center justify-center">
               {brand.image ? (
                 <img
-                  src={`${imageBaseUrl}${brand.image}`}
+                  src={brand.image?.startsWith('http') ? brand.image : `${imageBaseUrl}${brand.image}`}
                   alt={brand.name}
                   className="max-w-full max-h-16 object-contain group-hover:scale-110 transition"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/64?text=Logo";
-                  }}
+                  onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Logo"; }}
                 />
               ) : (
                 <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">

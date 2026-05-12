@@ -62,12 +62,10 @@ export default function CategorySidebar({ categories = [], imageBaseUrl = "" }) 
                 <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
                   {category.image && (
                     <img
-                      src={`${imageBaseUrl}${category.image}`}
+                      src={category.image?.startsWith('http') ? category.image : `${imageBaseUrl}${category.image}`}
                       alt={category.name}
                       className="w-8 h-8 object-contain"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/32?text=No+Image";
-                      }}
+                      onError={(e) => { e.target.src = "https://via.placeholder.com/32?text=No+Image"; }}
                     />
                   )}
                 </div>

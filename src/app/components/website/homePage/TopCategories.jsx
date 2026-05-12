@@ -40,12 +40,10 @@ export default function TopCategories({ categories = [], imageBaseUrl = "" }) {
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden group-hover:bg-teal-50 transition">
               {category.image && (
                 <img
-                  src={`${imageBaseUrl}${category.image}`}
+                  src={category.image?.startsWith('http') ? category.image : `${imageBaseUrl}${category.image}`}
                   alt={category.name}
                   className="w-10 h-10 object-contain"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/40?text=No+Image";
-                  }}
+                  onError={(e) => { e.target.src = "https://via.placeholder.com/40?text=No+Image"; }}
                 />
               )}
             </div>
